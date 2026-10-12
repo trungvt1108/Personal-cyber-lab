@@ -15,7 +15,7 @@ dev = [
   "pytest==9.1.1",
   "ruff==0.15.7",
   "yamllint==1.38.0",
-  "pip-audit==2.10.0",
+  "pip-audit==2.10.1",
   "Jinja2==3.1.6",
   "pymarkdownlnt==0.9.40",
 ]
