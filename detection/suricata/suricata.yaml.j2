@@ -1,0 +1,77 @@
+%YAML 1.1
+---
+vars:
+  address-groups:
+    HOME_NET: "[{{ lab_config.lab.subnet }}]"
+    EXTERNAL_NET: any
+    LAB_TARGET: "{{ lab_config.hosts.target.ip }}"
+  port-groups:
+    HTTP_PORTS: "{{ lab_config.services.http }}"
+    SSH_PORTS: "{{ lab_config.services.ssh }}"
+
+default-log-dir: /var/log/suricata
+default-rule-path: /etc/suricata/rules
+rule-files: [cyberlab.rules]
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+
+af-packet:
+  - interface: "{{ lab_config.hosts.monitor.interface }}"
+    # Exercises use IPv4; IPv6 and IPv4 multicast are outside this sensor's scope.
+    bpf-filter: "ip and not ip multicast"
+    threads: 1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: true
+    use-mmap: true
+    tpacket-v3: true
+
+outputs:
+  - eve-log:
+      enabled: true
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert
+        - http:
+            extended: false
+        - dns
+        - flow
+        - stats:
+            totals: true
+            threads: false
+  - stats:
+      enabled: false
+
+stats:
+  enabled: true
+  interval: 15
+flow:
+  memcap: 32mb
+stream:
+  memcap: 32mb
+  checksum-validation: true
+  reassembly:
+    memcap: 64mb
+    depth: 1mb
+detect:
+  profile: low
+threading:
+  set-cpu-affinity: false
+  detect-thread-ratio: 1.0
+app-layer:
+  protocols:
+    http:
+      enabled: true
+    ssh:
+      enabled: true
+    dns:
+      tcp:
+        enabled: true
+      udp:
+        enabled: true
+logging:
+  default-log-level: notice
+  outputs:
+    - console:
+        enabled: true

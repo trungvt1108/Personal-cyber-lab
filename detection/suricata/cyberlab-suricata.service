@@ -1,0 +1,32 @@
+[Unit]
+Description=Personal Cyber Lab passive private-interface IDS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=suricata
+Group=cyberlab-logs
+ExecStart=/usr/bin/suricata -c /etc/suricata/cyberlab.yaml --af-packet
+ExecReload=/bin/kill -USR2 $MAINPID
+Restart=on-failure
+RestartSec=5
+UMask=0027
+RuntimeDirectory=suricata
+RuntimeDirectoryMode=0750
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/var/log/suricata /run/suricata
+MemoryMax=768M
+TasksMax=64
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target

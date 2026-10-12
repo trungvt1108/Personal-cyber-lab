@@ -1,0 +1,165 @@
+- name: Verify this is an Ubuntu lab guest
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_version == '24.04'
+      - ansible_virtualization_type == 'VMware'
+      - ansible_virtualization_role == 'guest'
+      - lab_role in ['target', 'monitor']
+      - lab_admin is match('^[a-z][a-z0-9_-]{0,30}$')
+
+- name: Verify the configured guest lab address before any changes
+  ansible.builtin.command:
+    argv: [python3, /opt/personal-cyber-lab/cyberlab.py,
+           --config, /opt/personal-cyber-lab/config/lab.yml, verify-guest,
+           --source-role, "{{ lab_role }}", --confirm-lab-guest]
+  changed_when: false
+  check_mode: false
+
+- name: Read the deployed source configuration to prevent copy drift
+  ansible.builtin.slurp:
+    src: /opt/personal-cyber-lab/config/lab.yml
+  register: deployed_lab_config
+
+- name: Require identical configuration on controller and guest
+  ansible.builtin.assert:
+    that: (deployed_lab_config.content | b64decode | from_yaml) == lab_config
+    fail_msg: Synchronize config/lab.yml across all guest source copies before deployment.
+
+- name: Install common guest packages during the update window
+  ansible.builtin.apt:
+    name: [openssh-server, ufw, rsyslog, unattended-upgrades, python3-yaml, logrotate, acl]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Set the generic hostname
+  ansible.builtin.hostname:
+    name: "{{ lab_config.hosts[lab_role].hostname }}"
+
+- name: Resolve the lab administrator account
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ lab_admin }}"
+
+- name: Inspect existing authorized keys before hardening SSH
+  ansible.builtin.stat:
+    path: "{{ getent_passwd[lab_admin][4] }}/.ssh/authorized_keys"
+  register: authorized_keys
+
+- name: Require a pre-enrolled SSH public key
+  ansible.builtin.assert:
+    that:
+      - authorized_keys.stat.exists
+      - authorized_keys.stat.size | default(0) > 0
+    fail_msg: Enroll and verify a lab SSH key from the console before applying hardening.
+
+- name: Restrict existing SSH directory permissions
+  ansible.builtin.file:
+    path: "{{ getent_passwd[lab_admin][4] }}/.ssh"
+    state: directory
+    owner: "{{ lab_admin }}"
+    mode: '0700'
+
+- name: Restrict authorized key permissions without changing its content
+  ansible.builtin.file:
+    path: "{{ getent_passwd[lab_admin][4] }}/.ssh/authorized_keys"
+    owner: "{{ lab_admin }}"
+    mode: '0600'
+
+- name: Allow SSH from Kali before enabling the firewall
+  ansible.builtin.command:
+    argv:
+      - ufw
+      - allow
+      - in
+      - 'on'
+      - "{{ lab_config.hosts[lab_role].interface }}"
+      - from
+      - "{{ lab_config.hosts.kali.ip }}"
+      - to
+      - "{{ lab_config.hosts[lab_role].ip }}"
+      - port
+      - "{{ lab_config.services.ssh | string }}"
+      - proto
+      - tcp
+  register: ssh_rule
+  changed_when: "'Skipping' not in ssh_rule.stdout"
+
+- name: Deny incoming and routed traffic by default
+  ansible.builtin.command:
+    argv: [ufw, default, deny, "{{ item }}"]
+  loop: [incoming, routed]
+  changed_when: false
+
+- name: Permit outgoing traffic for controlled update windows
+  ansible.builtin.command: ufw default allow outgoing
+  changed_when: false
+
+- name: Enable UFW
+  ansible.builtin.command: ufw --force enable
+  changed_when: false
+
+- name: Deploy SSH hardening before distribution drop-ins
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/ssh/00-cyberlab.conf.j2"
+    dest: /etc/ssh/sshd_config.d/00-cyberlab.conf
+    mode: '0600'
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Validate and reload SSH
+
+- name: Validate full SSH configuration before changing activation mode
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+
+- name: Disable Ubuntu socket activation so sshd owns its private listener
+  ansible.builtin.systemd_service:
+    name: ssh.socket
+    enabled: false
+    state: stopped
+
+- name: Remove distribution socket migration overrides on the fresh lab guest
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/ssh.service.d/00-socket.conf
+    - /etc/systemd/system/ssh.socket.d/addresses.conf
+  register: ssh_socket_overrides
+
+- name: Create the ordinary SSH service override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/ssh.service.d
+    state: directory
+    mode: '0755'
+
+- name: Wait for static addressing before starting the private SSH listener
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ssh.service.d/10-cyberlab-network.conf
+    mode: '0644'
+    content: |
+      [Unit]
+      Wants=network-online.target
+      After=network-online.target
+  notify: Validate and reload SSH
+
+- name: Enable the ordinary SSH service with the validated listener
+  ansible.builtin.systemd_service:
+    name: ssh.service
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Configure unattended security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: '0644'
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+- name: Enable central system logging
+  ansible.builtin.service:
+    name: rsyslog
+    state: started
+    enabled: true

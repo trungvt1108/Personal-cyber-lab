@@ -1,0 +1,46 @@
+- name: Permit syslog to create files readable by the limited collector
+  ansible.builtin.user:
+    name: syslog
+    groups: cyberlab-logs
+    append: true
+  notify: Validate monitor rsyslog
+
+- name: Deploy the source-restricted syslog receiver
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/monitor/rsyslog-receive.conf.j2"
+    dest: /etc/rsyslog.d/30-cyberlab-receive.conf
+    mode: '0640'
+  notify: Validate monitor rsyslog
+
+- name: Create the rsyslog service override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/rsyslog.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Wait for the private IPv4 interface before starting the receiver
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/monitor/rsyslog-network.conf.j2"
+    dest: /etc/systemd/system/rsyslog.service.d/cyberlab-network.conf
+    owner: root
+    group: root
+    mode: '0644'
+  register: monitor_rsyslog_network
+  notify: Validate monitor rsyslog
+
+- name: Reload the rsyslog service override when changed
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: monitor_rsyslog_network.changed
+
+- name: Rotate EVE and central log files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../configs/monitor/logrotate.conf"
+    dest: /etc/logrotate.d/cyberlab-monitor
+    mode: '0644'
+
+- name: Check full monitor rsyslog configuration
+  ansible.builtin.command: /usr/sbin/rsyslogd -N1
+  changed_when: false

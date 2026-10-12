@@ -1,0 +1,13 @@
+title = "Personal Cyber Lab publication scan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Private/development directories are excluded from the public source scan; tracked sensitive paths are separately rejected"
+paths = [
+  '''(^|/|\\)reports(/|\\)private(/|\\)''',
+  '''(^|/|\\)(\.venv|\.git|\.generated|local|__pycache__)(/|\\)''',
+  '''(^|/|\\)(\.pytest_cache|\.ruff_cache)(/|\\)''',
+  '''(^|/|\\)pytest-cache-files-[^/\\]+(/|\\)''',
+]

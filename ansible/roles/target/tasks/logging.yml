@@ -1,0 +1,33 @@
+- name: Permit rsyslog to read the restricted Nginx log files
+  ansible.builtin.user:
+    name: syslog
+    groups: adm
+    append: true
+  notify: Validate target rsyslog
+
+- name: Create target Nginx logs privately only if missing
+  ansible.builtin.copy:
+    dest: "{{ item }}"
+    content: ''
+    force: false
+    owner: www-data
+    group: adm
+    mode: '0640'
+  loop: [/var/log/nginx/cyberlab-access.jsonl, /var/log/nginx/cyberlab-error.log]
+
+- name: Configure central target forwarding
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/target/rsyslog-forward.conf.j2"
+    dest: /etc/rsyslog.d/60-cyberlab-forward.conf
+    mode: '0640'
+  notify: Validate target rsyslog
+
+- name: Rotate structured HTTP logs
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../configs/target/logrotate.conf"
+    dest: /etc/logrotate.d/cyberlab-target
+    mode: '0644'
+
+- name: Check full target rsyslog configuration
+  ansible.builtin.command: /usr/sbin/rsyslogd -N1
+  changed_when: false

@@ -1,0 +1,36 @@
+- name: Set the generic lab hostname
+  ansible.builtin.hostname:
+    name: "{{ lab_config.hosts.kali.hostname }}"
+
+- name: Install administration tools
+  ansible.builtin.apt:
+    name: [python3-yaml, iproute2, iputils-ping, openssh-client, ufw]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Disable packet forwarding between Kali interfaces
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/90-cyberlab.conf
+    mode: '0644'
+    content: |
+      net.ipv4.ip_forward=0
+      net.ipv6.conf.all.forwarding=0
+      net.ipv4.conf.all.accept_redirects=0
+      net.ipv4.conf.all.send_redirects=0
+  register: kali_sysctl
+
+- name: Apply Kali network settings when changed
+  ansible.builtin.command: /usr/sbin/sysctl -p /etc/sysctl.d/90-cyberlab.conf
+  when: kali_sysctl.changed
+  changed_when: true
+
+- name: Deny incoming and routed traffic
+  ansible.builtin.command:
+    argv: [ufw, default, deny, "{{ item }}"]
+  loop: [incoming, routed]
+  changed_when: false
+
+- name: Enable Kali guest firewall
+  ansible.builtin.command: ufw --force enable
+  changed_when: false

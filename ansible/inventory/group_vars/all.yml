@@ -1,0 +1,6 @@
+lab_config: "{{ lookup('file', inventory_dir ~ '/../../config/lab.yml') | from_yaml }}"
+ansible_user: labuser
+ansible_port: "{{ lab_config.services.ssh }}"
+ansible_ssh_extra_args: "-b {{ lab_config.hosts.kali.ip }}"
+lab_admin: labuser
+lab_project_dir: /opt/personal-cyber-lab

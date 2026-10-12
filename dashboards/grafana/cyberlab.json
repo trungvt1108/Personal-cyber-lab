@@ -1,0 +1,652 @@
+{
+  "uid": "personal-cyber-lab",
+  "title": "Personal Cyber Lab · SOC Overview",
+  "description": "Educational telemetry; alerts and rejection log lines are not proof of compromise. Empty panels require pipeline verification.",
+  "tags": [
+    "cyberlab",
+    "defensive-security",
+    "suricata"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Collected lab events",
+      "type": "stat",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=~\"suricata|target\"}[$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 2,
+      "title": "IDS alerts",
+      "type": "stat",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"suricata\",event_type=\"alert\"}[$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 3,
+      "title": "SSH rejection log lines",
+      "type": "stat",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"target\",kind=\"auth\"} |~ \"Invalid user|Failed (password|publickey)|Connection closed by invalid user\" [$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 4,
+      "title": "HTTP requests",
+      "type": "stat",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"target\",kind=\"nginx_access\"}[$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Events per minute by stream",
+      "type": "timeseries",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job) (count_over_time({job=~\"suricata|target\"}[1m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "range",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 6,
+      "title": "IDS alerts over time",
+      "type": "timeseries",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"suricata\",event_type=\"alert\"}[1m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "range",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 7,
+      "title": "Top alert source hosts",
+      "type": "bargauge",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 6,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(5, sum by (src_ip) (count_over_time({job=\"suricata\",event_type=\"alert\"} | json | __error__=\"\" [$__range])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Alert destination IP",
+      "type": "bargauge",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 12,
+        "w": 6,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (dest_ip) (count_over_time({job=\"suricata\",event_type=\"alert\"} | json | __error__=\"\" [$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Alert protocol",
+      "type": "bargauge",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 6,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (proto) (count_over_time({job=\"suricata\",event_type=\"alert\"} | json | __error__=\"\" [$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Signature priority (not verdict)",
+      "type": "bargauge",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 12,
+        "w": 6,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (alert_severity) (count_over_time({job=\"suricata\",event_type=\"alert\"} | json | __error__=\"\" [$__range]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Most requested paths",
+      "type": "bargauge",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(8, sum by (path) (count_over_time({job=\"target\",kind=\"nginx_access\"} | json | __error__=\"\" [$__range])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "instant",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Recent security alerts · expand for IP / protocol / SID",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\",event_type=\"alert\"} | json | __error__=\"\"",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "range",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 13,
+      "title": "SSH investigation · count lines, correlate attempts",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"target\",kind=\"auth\"} |~ \"Invalid user|Failed |Accepted |Connection closed\"",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "range",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 14,
+      "title": "HTTP request evidence",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "cyberlab-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"target\",kind=\"nginx_access\"} | json | __error__=\"\"",
+          "datasource": {
+            "type": "loki",
+            "uid": "cyberlab-loki"
+          },
+          "queryType": "range",
+          "legendFormat": "{{src_ip}}{{dest_ip}}{{proto}}{{alert_severity}}{{path}}{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none"
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": []
+}

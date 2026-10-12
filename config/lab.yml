@@ -1,0 +1,32 @@
+lab:
+  name: Personal Cyber Lab
+  subnet: 192.168.56.0/24
+  network_name: cyberlab-internal
+  mode: standard
+hosts:
+  kali:
+    hostname: LAB-KALI
+    ip: 192.168.56.10
+    interface: eth1
+    nat_interface: eth0
+
+  target:
+    hostname: LAB-TARGET
+    ip: 192.168.56.20
+    interface: ens37
+    nat_interface: ens33
+
+  monitor:
+    hostname: LAB-MONITOR
+    ip: 192.168.56.30
+    interface: ens37
+    nat_interface: ens33
+services:
+  ssh: 22
+  http: 80
+  grafana: 3000
+  syslog: 514
+simulation:
+  max_count: 12
+  interval_seconds: 0.5
+  discovery_ports: [22, 80, 443, 8080]

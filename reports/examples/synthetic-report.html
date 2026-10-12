@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Personal Cyber Lab report</title><style>
+body{font:15px system-ui,sans-serif;background:#0b1220;color:#dce6f2;margin:0;padding:32px}main{max-width:1150px;margin:auto}
+h1{color:#5eead4}h2{margin-top:32px}.notice{border:1px solid #4b637b;padding:14px;border-radius:10px;background:#142235}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:24px 0}.card{background:#162436;padding:18px;border-radius:12px}
+.card strong{display:block;font-size:32px;color:#5eead4}.card span{color:#abc0d6}.table{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #293b50;vertical-align:top;overflow-wrap:anywhere}th{color:#93c5fd}pre{white-space:pre-wrap;overflow-wrap:anywhere}
+footer{margin-top:32px;color:#93a8bf}</style></head><body><main>
+<h1>Personal Cyber Lab</h1><p>SYNTHETIC EXAMPLE — not live evidence</p><p>Timestamp (UTC): 2000-01-01T00:30:00+00:00</p>
+<div class="notice">Lab status: SYNTHETIC / illustrative only. System health: UNVERIFIED unless confirmed by guest-local diagnostics.
+Counts refer to loaded log records, not unique incidents. An IDS alert is an investigation lead. Parser warnings can make evidence incomplete.</div>
+<div class="cards"><div class='card'><strong>4</strong><span>IDS alerts</span></div><div class='card'><strong>2</strong><span>SSH rejection lines</span></div><div class='card'><strong>0</strong><span>Accepted SSH log lines</span></div><div class='card'><strong>3</strong><span>HTTP request records</span></div></div><h2>Configured hosts</h2><div class='table'><table><thead><tr><th>role</th><th>hostname</th><th>ip</th></tr></thead><tbody><tr><td>kali</td><td>LAB-KALI</td><td>192.168.56.10</td></tr><tr><td>target</td><td>LAB-TARGET</td><td>192.168.56.20</td></tr><tr><td>monitor</td><td>LAB-MONITOR</td><td>192.168.56.30</td></tr></tbody></table></div>
+<h2>Available services</h2><div class='table'><table><thead><tr><th>host</th><th>service</th><th>port</th><th>status</th></tr></thead><tbody><tr><td>target</td><td>ssh</td><td>22</td><td>UNVERIFIED</td></tr><tr><td>target</td><td>http</td><td>80</td><td>UNVERIFIED</td></tr><tr><td>monitor</td><td>ssh</td><td>22</td><td>UNVERIFIED</td></tr><tr><td>monitor</td><td>grafana</td><td>3000</td><td>UNVERIFIED</td></tr></tbody></table></div>
+<h2>IDS statistics</h2><pre>{
+  &quot;event_counts&quot;: {
+    &quot;alert&quot;: 4,
+    &quot;http&quot;: 1,
+    &quot;flow&quot;: 1,
+    &quot;stats&quot;: 1
+  },
+  &quot;packets_observed&quot;: 32,
+  &quot;packet_drops&quot;: 0
+}</pre>
+<h2>Recent alerts</h2><div class='table'><table><thead><tr><th>timestamp</th><th>src ip</th><th>dest ip</th><th>dest port</th><th>protocol</th><th>sid</th><th>severity</th><th>signature</th></tr></thead><tbody><tr><td>2000-01-01T00:02:00.000000+0000</td><td>192.168.56.10</td><td>192.168.56.20</td><td>80</td><td>TCP</td><td>1000007</td><td>3</td><td>CYBERLAB elevated educational HTTP frequency</td></tr><tr><td>2000-01-01T00:01:01.000000+0000</td><td>192.168.56.10</td><td>192.168.56.20</td><td>80</td><td>TCP</td><td>1000005</td><td>3</td><td>CYBERLAB harmless security-test marker</td></tr><tr><td>2000-01-01T00:01:00.000000+0000</td><td>192.168.56.10</td><td>192.168.56.20</td><td>80</td><td>TCP</td><td>1000004</td><td>3</td><td>CYBERLAB harmless admin-test marker</td></tr><tr><td>2000-01-01T00:00:00.000000+0000</td><td>192.168.56.10</td><td>192.168.56.20</td><td>-</td><td>ICMP</td><td>1000001</td><td>3</td><td>CYBERLAB educational ICMP echo</td></tr></tbody></table></div>
+<h2>SSH authentication evidence</h2><div class='table'><table><thead><tr><th>timestamp</th><th>message</th></tr></thead><tbody><tr><td>2000-01-01T00:00:40+00:00</td><td>CYBERLAB synthetic pipeline marker</td></tr><tr><td>2000-01-01T00:00:31+00:00</td><td>Connection closed by invalid user cyberlab-invalid 192.168.56.10 port 42000 [preauth]</td></tr><tr><td>2000-01-01T00:00:30+00:00</td><td>Invalid user cyberlab-invalid from 192.168.56.10 port 42000</td></tr></tbody></table></div>
+<h2>HTTP paths</h2><div class='table'><table><thead><tr><th>path</th><th>records</th></tr></thead><tbody><tr><td>/admin-test</td><td>1</td></tr><tr><td>/security-test</td><td>1</td></tr><tr><td>/health</td><td>1</td></tr></tbody></table></div>
+<h2>Evidence completeness</h2><pre>{
+  &quot;missing_sources&quot;: [],
+  &quot;malformed_records&quot;: 0,
+  &quot;out_of_scope_records&quot;: 0,
+  &quot;omitted_records&quot;: 0
+}</pre>
+<footer>Local-only output. No analytics, external assets, upload, cookies or credentials. Preserve live evidence privately; publish synthetic examples only.</footer>
+</main></body></html>

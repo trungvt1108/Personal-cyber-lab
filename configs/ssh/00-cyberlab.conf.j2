@@ -1,0 +1,16 @@
+Port {{ lab_config.services.ssh }}
+ListenAddress {{ lab_config.hosts[lab_role].ip }}
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+AuthenticationMethods publickey
+PubkeyAuthentication yes
+AllowUsers {{ lab_admin }}
+MaxAuthTries 3
+LoginGraceTime 20
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+PermitTunnel no
+LogLevel VERBOSE

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personal-cyber-lab"
+version = "1.0.0"
+description = "Local, isolated defensive cybersecurity lab and safety-gated diagnostics"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = ["PyYAML==6.0.3"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "ruff==0.15.7",
+  "yamllint==1.38.0",
+  "pip-audit==2.10.0",
+  "Jinja2==3.1.6",
+  "pymarkdownlnt==0.9.40",
+]
+
+[project.scripts]
+cyberlab-cli = "cyberlab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cyberlab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["lab: requires running isolated VMware Workstation Pro guests; opt in explicitly"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".venv", ".generated"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106"]
+"cyberlab/network.py" = ["S603", "S607"]
+"cyberlab/simulations.py" = ["S603", "S607"]
+"scripts/**/*.py" = ["S603", "S607"]
+"cyberlab/validation.py" = ["S603", "S607"]

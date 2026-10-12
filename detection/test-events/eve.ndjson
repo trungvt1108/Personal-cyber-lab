@@ -1,0 +1,7 @@
+{"synthetic":true,"timestamp":"2000-01-01T00:00:00.000000+0000","event_type":"alert","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","proto":"ICMP","alert":{"signature_id":1000001,"signature":"CYBERLAB educational ICMP echo","severity":3}}
+{"synthetic":true,"timestamp":"2000-01-01T00:01:00.000000+0000","event_type":"alert","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","dest_port":80,"proto":"TCP","alert":{"signature_id":1000004,"signature":"CYBERLAB harmless admin-test marker","severity":3}}
+{"synthetic":true,"timestamp":"2000-01-01T00:01:01.000000+0000","event_type":"alert","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","dest_port":80,"proto":"TCP","alert":{"signature_id":1000005,"signature":"CYBERLAB harmless security-test marker","severity":3}}
+{"synthetic":true,"timestamp":"2000-01-01T00:02:00.000000+0000","event_type":"alert","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","dest_port":80,"proto":"TCP","alert":{"signature_id":1000007,"signature":"CYBERLAB elevated educational HTTP frequency","severity":3}}
+{"synthetic":true,"timestamp":"2000-01-01T00:01:00.000000+0000","event_type":"http","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","proto":"TCP","http":{"url":"/admin-test","http_method":"GET","status":200}}
+{"synthetic":true,"timestamp":"2000-01-01T00:02:01.000000+0000","event_type":"flow","src_ip":"192.168.56.10","dest_ip":"192.168.56.20","proto":"TCP"}
+{"synthetic":true,"timestamp":"2000-01-01T00:03:00.000000+0000","event_type":"stats","stats":{"uptime":180,"capture":{"kernel_packets":32,"kernel_drops":0}}}

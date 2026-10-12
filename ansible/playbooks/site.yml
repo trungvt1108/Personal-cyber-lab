@@ -1,0 +1,44 @@
+- name: Validate shared configuration before any guest connection
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  any_errors_fatal: true
+  tasks:
+    - name: Apply controller safety checks
+      ansible.builtin.import_tasks: ../tasks/controller-preflight.yml
+
+- name: Configure Kali administration guest
+  hosts: kali
+  gather_facts: false
+  any_errors_fatal: true
+  become: true
+  pre_tasks:
+    - name: Verify controller before collecting guest facts
+      ansible.builtin.import_tasks: ../tasks/controller-preflight.yml
+    - name: Gather facts on the verified guest
+      ansible.builtin.setup:
+  roles: [kali]
+
+- name: Configure lab target
+  hosts: target
+  gather_facts: false
+  any_errors_fatal: true
+  become: true
+  pre_tasks:
+    - name: Verify controller before collecting guest facts
+      ansible.builtin.import_tasks: ../tasks/controller-preflight.yml
+    - name: Gather facts on the verified guest
+      ansible.builtin.setup:
+  roles: [common, target]
+
+- name: Configure lab monitor
+  hosts: monitor
+  gather_facts: false
+  any_errors_fatal: true
+  become: true
+  pre_tasks:
+    - name: Verify controller before collecting guest facts
+      ansible.builtin.import_tasks: ../tasks/controller-preflight.yml
+    - name: Gather facts on the verified guest
+      ansible.builtin.setup:
+  roles: [common, monitor]

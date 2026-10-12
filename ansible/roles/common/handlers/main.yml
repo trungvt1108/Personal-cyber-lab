@@ -1,0 +1,11 @@
+- name: Validate and reload SSH
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: true
+  notify: Restart SSH service
+
+- name: Restart SSH service
+  ansible.builtin.systemd_service:
+    name: ssh
+    state: restarted
+    enabled: true
+    daemon_reload: true

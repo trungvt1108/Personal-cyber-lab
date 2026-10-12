@@ -1,0 +1,76 @@
+- name: Install IDS without starting the vendor sensor on the NAT adapter
+  ansible.builtin.apt:
+    name: suricata
+    state: present
+    policy_rc_d: 101
+
+- name: Disable the vendor sensor to avoid duplicate capture processes
+  ansible.builtin.service:
+    name: suricata
+    state: stopped
+    enabled: false
+
+- name: Create a non-login capture service account
+  ansible.builtin.user:
+    name: suricata
+    group: cyberlab-logs
+    system: true
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Create the restricted EVE directory
+  ansible.builtin.file:
+    path: /var/log/suricata
+    state: directory
+    owner: suricata
+    group: cyberlab-logs
+    mode: '0750'
+
+- name: Create the custom rule directory
+  ansible.builtin.file:
+    path: /etc/suricata/rules
+    state: directory
+    mode: '0755'
+
+- name: Preserve EVE contents and repair log ownership for the capture service
+  ansible.builtin.file:
+    path: /var/log/suricata/eve.json
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    owner: suricata
+    group: cyberlab-logs
+    mode: '0640'
+
+- name: Render the lab educational rules
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../detection/rules/local.rules.j2"
+    dest: /etc/suricata/rules/cyberlab.rules
+    mode: '0644'
+  notify: Validate lab Suricata
+
+- name: Render the passive IDS configuration
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../detection/suricata/suricata.yaml.j2"
+    dest: /etc/suricata/cyberlab.yaml
+    mode: '0644'
+  notify: Validate lab Suricata
+
+- name: Deploy the restricted capture service
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../detection/suricata/cyberlab-suricata.service"
+    dest: /etc/systemd/system/cyberlab-suricata.service
+    mode: '0644'
+  notify: Validate lab Suricata
+
+- name: Validate the installed IDS configuration before starting
+  become_user: suricata
+  ansible.builtin.command: /usr/bin/suricata -T -c /etc/suricata/cyberlab.yaml
+  changed_when: false
+
+- name: Enable the custom lab sensor
+  ansible.builtin.systemd_service:
+    name: cyberlab-suricata
+    daemon_reload: true
+    enabled: true
+    state: started

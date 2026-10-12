@@ -1,0 +1,41 @@
+name: cyberlab-target
+services:
+  demo:
+    build:
+      context: ../..
+      dockerfile: docker/target/Dockerfile
+    restart: unless-stopped
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ports: ["127.0.0.1:8080:8080"]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m"]
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    networks: [demo, proxy]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import http.client;
+          c=http.client.HTTPConnection('127.0.0.1',8080,timeout=2);
+          c.request('GET','/health'); assert c.getresponse().status==200
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+networks:
+  demo:
+    internal: true
+  # Published loopback ports need a non-internal bridge on current Docker Engine.
+  proxy:
+    driver: bridge
+    internal: false
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"

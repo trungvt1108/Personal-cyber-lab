@@ -1,0 +1,13 @@
+# Local files remain available; this action additionally forwards guest events.
+module(load="imfile")
+input(type="imfile" File="/var/log/nginx/cyberlab-access.jsonl"
+      Tag="nginx_access" Facility="local6" Severity="info" PersistStateInterval="10")
+input(type="imfile" File="/var/log/nginx/cyberlab-error.log"
+      Tag="nginx_error" Facility="local6" Severity="warning" PersistStateInterval="10")
+
+*.* action(name="cyberlab_forward" type="omfwd"
+  Target="{{ lab_config.hosts.monitor.ip }}" Port="{{ lab_config.services.syslog }}"
+  Protocol="tcp" TCP_Framing="octet-counted" Template="RSYSLOG_SyslogProtocol23Format"
+  action.resumeRetryCount="-1" queue.type="LinkedList" queue.size="1000"
+  queue.filename="cyberlab-forward" queue.maxDiskSpace="16m"
+  queue.saveOnShutdown="on")

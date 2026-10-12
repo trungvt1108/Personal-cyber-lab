@@ -1,0 +1,78 @@
+- name: Install monitor services
+  ansible.builtin.apt:
+    name: [nginx, docker.io, docker-compose-v2]
+    state: present
+
+- name: Create the restricted log-reader group
+  ansible.builtin.group:
+    name: cyberlab-logs
+    state: present
+
+- name: Create the central target-log directory
+  ansible.builtin.file:
+    path: /var/log/cyberlab-target
+    state: directory
+    owner: syslog
+    group: cyberlab-logs
+    mode: '0750'
+
+- name: Remove the default monitor Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Validate monitor Nginx
+
+- name: Configure Grafana's lab-only reverse proxy
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/monitor/nginx.conf.j2"
+    dest: /etc/nginx/conf.d/cyberlab.conf
+    mode: '0644'
+  notify: Validate monitor Nginx
+
+- name: Create the private monitor Nginx error log if missing
+  ansible.builtin.copy:
+    dest: /var/log/nginx/cyberlab-monitor-error.log
+    content: ''
+    force: false
+    owner: www-data
+    group: adm
+    mode: '0640'
+
+- name: Restrict Grafana and syslog ports to their source guests
+  ansible.builtin.command:
+    argv:
+      - ufw
+      - allow
+      - in
+      - 'on'
+      - "{{ lab_config.hosts.monitor.interface }}"
+      - from
+      - "{{ item.source }}"
+      - to
+      - "{{ lab_config.hosts.monitor.ip }}"
+      - port
+      - "{{ item.port | string }}"
+      - proto
+      - tcp
+  loop:
+    - {source: "{{ lab_config.hosts.kali.ip }}", port: "{{ lab_config.services.grafana }}"}
+    - {source: "{{ lab_config.hosts.target.ip }}", port: "{{ lab_config.services.syslog }}"}
+  register: monitor_rule
+  changed_when: "'Skipping' not in monitor_rule.stdout"
+
+- name: Validate monitor Nginx before starting services
+  ansible.builtin.command: /usr/sbin/nginx -t
+  changed_when: false
+
+- name: Start monitor base services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: [nginx, docker]
+
+- name: Deploy the private-interface IDS
+  ansible.builtin.include_tasks: suricata.yml
+
+- name: Deploy source-restricted central logging
+  ansible.builtin.include_tasks: logging.yml

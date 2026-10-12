@@ -1,0 +1,98 @@
+name: cyberlab-monitoring
+services:
+  loki:
+    image: grafana/loki:3.7.8
+    command: ["-config.file=/etc/loki/config.yml"]
+    user: "10001:10001"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./loki.yml:/etc/loki/config.yml:ro
+      - ../../local/runtime/loki:/loki:rw
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m"]
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+    networks: [monitoring]
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+  alloy:
+    image: grafana/alloy:v1.20.1
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=127.0.0.1:12345
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    user: "10002:10002"
+    group_add: ["${CYBERLAB_LOG_GID:?Set the cyberlab-logs group GID with start-stack.sh}"]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - /var/log/suricata:/var/log/suricata:ro
+      - /var/log/cyberlab-target:/var/log/cyberlab-target:ro
+      # Mount the parent directory so the non-root Alloy UID can create its data path.
+      - ../../local/runtime/alloy:/var/lib/alloy:rw
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m"]
+    mem_limit: 192m
+    cpus: 0.5
+    pids_limit: 128
+    depends_on: [loki]
+    networks: [monitoring]
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+  grafana:
+    image: grafana/grafana:13.2.3
+    user: "472:472"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ports: ["127.0.0.1:3300:3000"]
+    environment:
+      GF_SERVER_ROOT_URL: "${CYBERLAB_GRAFANA_ROOT_URL:?Use start-stack.sh to derive the configured lab root URL}"
+      GF_SECURITY_ADMIN_USER: labadmin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+      GF_SECURITY_SECRET_KEY__FILE: /run/secrets/grafana_security_key
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_LOG_MODE: console
+    secrets: [grafana_password, grafana_security_key]
+    volumes:
+      - ../../local/runtime/grafana:/var/lib/grafana:rw
+      - ../../dashboards/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../dashboards/grafana/cyberlab.json:/var/lib/grafana/dashboards/cyberlab.json:ro
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m"]
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 128
+    depends_on: [loki]
+    networks: [monitoring, proxy]
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+networks:
+  monitoring:
+    internal: true
+  # Only Grafana joins this bridge to publish its loopback upstream for Nginx.
+  proxy:
+    driver: bridge
+    internal: false
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+secrets:
+  grafana_password:
+    file: ../../local/grafana-admin-password
+  grafana_security_key:
+    file: ../../local/grafana-security-key

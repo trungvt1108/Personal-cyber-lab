@@ -1,0 +1,7 @@
+# The target image needs only its Dockerfile and standard-library demo service.
+**
+!cyberlab/
+!cyberlab/demo.py
+!docker/
+!docker/target/
+!docker/target/Dockerfile

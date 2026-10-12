@@ -1,0 +1,19 @@
+- name: Validate target Nginx
+  ansible.builtin.command: /usr/sbin/nginx -t
+  changed_when: true
+  notify: Reload target Nginx
+
+- name: Reload target Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Validate target rsyslog
+  ansible.builtin.command: /usr/sbin/rsyslogd -N1
+  changed_when: true
+  notify: Restart target rsyslog
+
+- name: Restart target rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted

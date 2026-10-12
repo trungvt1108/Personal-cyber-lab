@@ -1,0 +1,8 @@
+[Unit]
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+# networkd-wait-online uses netlink; the distro rsyslog unit excludes it by default.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ExecStartPre=/usr/lib/systemd/systemd-networkd-wait-online --interface={{ lab_config.hosts.monitor.interface }} --ipv4 --timeout=60

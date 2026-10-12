@@ -1,0 +1,61 @@
+- name: Install target services
+  ansible.builtin.apt:
+    name: [nginx, docker.io, docker-compose-v2]
+    state: present
+
+- name: Verify no account exists for the invalid-user demonstration
+  ansible.builtin.getent:
+    database: passwd
+    key: cyberlab-invalid
+    fail_key: false
+
+- name: Prevent the SSH demonstration from addressing a valid account
+  ansible.builtin.assert:
+    that: getent_passwd['cyberlab-invalid'] == none
+    fail_msg: The reserved demo username exists; remove it manually or stop the exercise.
+
+- name: Remove the default Nginx site on this lab guest
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Validate target Nginx
+
+- name: Configure the target HTTP site
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../configs/target/nginx.conf.j2"
+    dest: /etc/nginx/conf.d/cyberlab.conf
+    mode: '0644'
+  notify: Validate target Nginx
+
+- name: Permit lab HTTP only from Kali
+  ansible.builtin.command:
+    argv:
+      - ufw
+      - allow
+      - in
+      - 'on'
+      - "{{ lab_config.hosts.target.interface }}"
+      - from
+      - "{{ lab_config.hosts.kali.ip }}"
+      - to
+      - "{{ lab_config.hosts.target.ip }}"
+      - port
+      - "{{ lab_config.services.http | string }}"
+      - proto
+      - tcp
+  register: http_rule
+  changed_when: "'Skipping' not in http_rule.stdout"
+
+- name: Validate target Nginx before starting services
+  ansible.builtin.command: /usr/sbin/nginx -t
+  changed_when: false
+
+- name: Start target services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: [nginx, docker]
+
+- name: Deploy target log forwarding
+  ansible.builtin.include_tasks: logging.yml

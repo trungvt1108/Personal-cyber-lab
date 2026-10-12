@@ -1,0 +1,32 @@
+- name: Validate shared configuration on the Kali controller
+  ansible.builtin.command:
+    argv: [python3, "{{ playbook_dir }}/../../cyberlab.py",
+           --config, "{{ playbook_dir }}/../../config/lab.yml", validate-config]
+  delegate_to: localhost
+  become: false
+  run_once: true
+  changed_when: false
+  check_mode: false
+
+- name: Verify VMware controller identity and private source address
+  ansible.builtin.command:
+    argv: [python3, "{{ playbook_dir }}/../../cyberlab.py",
+           --config, "{{ playbook_dir }}/../../config/lab.yml", verify-guest,
+           --source-role, kali, --confirm-lab-guest]
+  delegate_to: localhost
+  become: false
+  run_once: true
+  changed_when: false
+  check_mode: false
+
+- name: Reject overridden inventory destinations before guest connections
+  ansible.builtin.assert:
+    that:
+      - groups['target'] | length == 1
+      - groups['monitor'] | length == 1
+      - hostvars[item].lab_role in ['target', 'monitor']
+      - hostvars[item].ansible_host == lab_config.hosts[hostvars[item].lab_role].ip
+  delegate_to: localhost
+  become: false
+  run_once: true
+  loop: "{{ groups['target'] + groups['monitor'] }}"

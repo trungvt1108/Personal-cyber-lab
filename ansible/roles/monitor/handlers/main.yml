@@ -1,0 +1,32 @@
+- name: Validate monitor Nginx
+  ansible.builtin.command: /usr/sbin/nginx -t
+  changed_when: true
+  notify: Reload monitor Nginx
+
+- name: Reload monitor Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Validate lab Suricata
+  become_user: suricata
+  ansible.builtin.command: /usr/bin/suricata -T -c /etc/suricata/cyberlab.yaml
+  changed_when: true
+  notify: Restart lab Suricata
+
+- name: Restart lab Suricata
+  ansible.builtin.systemd_service:
+    name: cyberlab-suricata
+    daemon_reload: true
+    state: restarted
+
+- name: Validate monitor rsyslog
+  ansible.builtin.command: /usr/sbin/rsyslogd -N1
+  # A successful validation must trigger the queued restart after config changes.
+  changed_when: true
+  notify: Restart monitor rsyslog
+
+- name: Restart monitor rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted

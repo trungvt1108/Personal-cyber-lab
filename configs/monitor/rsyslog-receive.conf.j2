@@ -1,0 +1,29 @@
+module(load="imtcp")
+template(name="CyberLabJSON" type="list" option.jsonf="on") {
+  property(outname="timestamp" name="timereported" dateFormat="rfc3339" format="jsonf")
+  property(outname="hostname" name="hostname" format="jsonf")
+  property(outname="sender_ip" name="fromhost-ip" format="jsonf")
+  property(outname="program" name="programname" format="jsonf")
+  property(outname="message" name="msg" format="jsonf")
+}
+template(name="CyberLabRawMessage" type="string" string="%msg%\n")
+
+ruleset(name="cyberlab_remote") {
+  if $fromhost-ip != '{{ lab_config.hosts.target.ip }}' then { stop }
+  if $programname == 'nginx_access' then {
+    action(type="omfile" file="/var/log/cyberlab-target/nginx-access.jsonl"
+           template="CyberLabRawMessage" fileOwner="syslog" fileGroup="cyberlab-logs" fileCreateMode="0640")
+  } else if $programname == 'nginx_error' then {
+    action(type="omfile" file="/var/log/cyberlab-target/nginx-error.jsonl"
+           template="CyberLabJSON" fileOwner="syslog" fileGroup="cyberlab-logs" fileCreateMode="0640")
+  } else if $syslogfacility-text == 'auth' or $syslogfacility-text == 'authpriv' then {
+    action(type="omfile" file="/var/log/cyberlab-target/auth.jsonl"
+           template="CyberLabJSON" fileOwner="syslog" fileGroup="cyberlab-logs" fileCreateMode="0640")
+  } else {
+    action(type="omfile" file="/var/log/cyberlab-target/system.jsonl"
+           template="CyberLabJSON" fileOwner="syslog" fileGroup="cyberlab-logs" fileCreateMode="0640")
+  }
+  stop
+}
+input(type="imtcp" address="{{ lab_config.hosts.monitor.ip }}"
+      port="{{ lab_config.services.syslog }}" ruleset="cyberlab_remote")

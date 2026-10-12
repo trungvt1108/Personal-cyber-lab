@@ -1,0 +1,53 @@
+logging {
+  level = "warn"
+  format = "json"
+}
+
+loki.source.file "eve" {
+  targets = [{"__path__" = "/var/log/suricata/eve.json", "job" = "suricata", "host_role" = "monitor"}]
+  forward_to = [loki.process.eve.receiver]
+}
+
+loki.process "eve" {
+  stage.json {
+    expressions = {event_type = "", timestamp = ""}
+  }
+  stage.labels {
+    values = {event_type = ""}
+  }
+  stage.timestamp {
+    source = "timestamp"
+    format = "2006-01-02T15:04:05.999999-0700"
+    fallback_formats = ["RFC3339Nano"]
+    action_on_failure = "skip"
+  }
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "target" {
+  targets = [
+    {"__path__" = "/var/log/cyberlab-target/auth.jsonl", "job" = "target", "kind" = "auth"},
+    {"__path__" = "/var/log/cyberlab-target/nginx-access.jsonl", "job" = "target", "kind" = "nginx_access"},
+    {"__path__" = "/var/log/cyberlab-target/nginx-error.jsonl", "job" = "target", "kind" = "nginx_error"},
+    {"__path__" = "/var/log/cyberlab-target/system.jsonl", "job" = "target", "kind" = "system"},
+  ]
+  forward_to = [loki.process.target.receiver]
+}
+
+loki.process "target" {
+  stage.json {
+    expressions = {timestamp = ""}
+  }
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339Nano"
+    action_on_failure = "skip"
+  }
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
