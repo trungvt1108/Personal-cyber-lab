@@ -14,10 +14,13 @@ viết báo cáo. [English](README.md) · [Hướng dẫn cài đặt](docs/inst
 
 **Bạn dùng VMware:** xem [cài đặt, cập nhật VM hiện có và test từng bước](docs/vmware.vi.md).
 
-**Mã nguồn và cấu hình đã được xây dựng; việc triển khai VM và kiểm chứng detection
-thực tế còn chờ bạn thực hiện.** Project không tự tạo VM, thay đổi mạng Windows,
-đưa thông tin cá nhân vào cấu hình hoặc push GitHub. Dữ liệu ví dụ được gắn nhãn
-synthetic; không dùng chúng để tuyên bố lab đã phát hiện sự kiện thật.
+**Ba VM đã được triển khai; bằng chứng người dùng cung cấp xác nhận validator
+Monitor đạt đủ 15 PASS.** Đã có quan sát URL marker, SSH rejection và bài
+discover/HTTP. Kiểm tra source trên Windows đạt **129 PASS, 6 test live SKIP**.
+Ảnh/log thật được giữ private; dữ liệu ví dụ vẫn có nhãn synthetic. Xem
+[kết quả và giới hạn kiểm chứng](docs/validation-results.md), gồm các mục còn chờ
+như Ansible idempotence và hosted CI. Project không tự tạo VM, thay đổi mạng
+Windows hoặc push GitHub.
 
 ## Kiến trúc và tài nguyên
 

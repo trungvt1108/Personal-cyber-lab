@@ -3,6 +3,9 @@
 These steps require actual running guests. Empty dashboards and static JSON
 validation do not establish monitoring health. Start with a configured snapshot,
 review isolation, verify clocks and use a narrow UTC investigation window.
+Disconnect NAT and disable Shared Folders, clipboard and drag-and-drop on all
+guests before generating traffic. Finish source/evidence transfer first; reopening
+host sharing ends the isolated exercise window. See [the finalization guide](finalize.vi.md).
 
 ```mermaid
 flowchart LR

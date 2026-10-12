@@ -1,11 +1,14 @@
 # Bàn giao Personal Cyber Lab
 
 Mã nguồn, template và tài liệu đã được rà soát và chuyển sang VMware Workstation Pro.
-Khả năng bắt gói và pipeline trên các VM của bạn vẫn cần kiểm chứng bằng marker mới.
+Ba VM đã hoạt động; ảnh thực hành xác nhận URL marker, SSH rejection,
+discover/HTTP và validator Monitor đạt đủ 15 PASS. Kết quả VM dựa trên bằng chứng
+người dùng cung cấp; log/ảnh/hash thật được giữ private.
 Xem [hướng dẫn cập nhật và test VMware](vmware.vi.md).
 Trạng thái công khai: **NOT READY** cho tới khi chủ repository hoàn tất các mục
-review trong [publication audit](../PUBLICATION_AUDIT.md). Chưa stage, commit hay
-push. Dữ liệu đính kèm chỉ là synthetic, không phải bằng chứng detection thực tế.
+review trong [publication audit](../PUBLICATION_AUDIT.md). Bản source đầu tiên đã
+được lưu bằng commit local; chưa có remote trong lần kiểm tra ngày 2026-10-13.
+Dữ liệu công khai kèm source chỉ là synthetic, không phải log thực hành thật.
 
 ## 1. Chức năng đã xây dựng
 
@@ -27,21 +30,25 @@ Các thư mục phát triển/runtime private được Git bỏ qua, không nằ
 ## 3. Kiểm tra đã chạy
 
 Kết quả đo và phạm vi: [validation-results.md](validation-results.md).
-Vòng rà soát VMware ngày 2026-10-10: **129 passed, 6 skipped**. Ruff, format, YAML, Markdown, ShellCheck,
+Vòng rà soát ngày 2026-10-13: **129 passed, 6 skipped**. Ruff, format, YAML, Markdown, ShellCheck,
 PowerShell syntax, Compose config, template parsing và tính tái tạo dashboard
 được kiểm tra offline. Gitleaks không tìm thấy leak; scan candidate không còn
 finding; pip-audit không tìm thấy advisory đã biết trong snapshot 48 package.
-Các kiểm tra này không chứng minh topology hay pipeline VM đang hoạt động.
+Kiểm tra offline và bằng chứng VM được ghi riêng; test offline không thay thế
+validator guest hoặc kiểm tra topology.
 
-## 4. Kiểm tra cần VM
+## 4. Bằng chứng VM và kiểm tra còn chờ
 
-**SKIPPED - requires running cyber lab.**
+Ảnh Kali xác nhận baseline/preflight PASS. Ảnh Monitor xác nhận Suricata -T,
+Nginx -t, syslog listener và 15 mục validator PASS, gồm marker EVE/central log/Loki.
+Dashboard và Explore đã có dữ liệu thực hành. Đây là quan sát trên deployment
+hiện có, không phải xác nhận mọi đường xử lý hoặc mọi lần khởi động đều đúng.
 
-Kiểm tra reachability/services, thực thi/idempotence Ansible, các lệnh kiểm tra
-cấu hình service, Suricata packet/rule, auth/HTTP log forwarding, container
-readiness và marker → EVE → Loki → dashboard. Dùng
-[testing.md](testing.md) và [detection-guide.md](detection-guide.md).
-Hosted GitHub Actions chưa chạy; image digest và guest package audit còn chờ.
+Sáu test live pytest vẫn SKIP trong bộ test Windows. Chạy lại toàn bộ Ansible để
+đo idempotence, log rotation/retention, reboot sau bản vá IPv4, image digest và
+guest package audit chưa được đo. Hosted GitHub Actions chưa chạy. Dùng
+[testing.md](testing.md) và [detection-guide.md](detection-guide.md) để kiểm tra
+từng mục khi cần; giữ kết quả chưa chạy ở trạng thái chưa xác minh.
 
 ## 5. Thiết lập thủ công
 
@@ -52,7 +59,8 @@ Hosted GitHub Actions chưa chạy; image digest và guest package audit còn ch
 3. Tạo key riêng ngoài repo và xác minh SSH fingerprint từ console.
 4. Trong cửa sổ NAT cài đặt, chạy Ansible từ Kali; khởi động demo trên target
    và dashboard trên monitor với mật khẩu riêng nhập kín.
-5. Ngắt NAT trên cả ba VM, kiểm tra route, chạy preflight/validator và tạo marker.
+5. Ngắt NAT, tắt Shared Folders/clipboard/drag-and-drop trên cả ba VM, kiểm tra
+   route, chạy preflight/validator và tạo marker.
 6. Review file, staged diff, commit metadata/history và checklist trước khi tự push.
 
 ## 6. Phát hiện và giới hạn bảo mật
@@ -65,8 +73,9 @@ Không phát hiện credential thật. Xem [audit](../PUBLICATION_AUDIT.md).
 
 HTTP/syslog trong lab vẫn plaintext; threshold giáo dục có thể tạo false positive;
 SSH mã hóa phải đối chiếu auth log. Pin tag không thay thế image vulnerability
-scan. Chưa review staged snapshot/commit vì chưa stage/commit; các mục chưa xác
-minh được ghi **REQUIRES MANUAL REVIEW**, không được tự coi là an toàn.
+scan. Source và commit đầu tiên đã được review; chủ project đã chọn giữ tên/email
+hiện tại trong commit metadata. Mỗi lần sửa phải review lại staged diff và scan
+history sau commit; các mục chưa xác minh vẫn được ghi rõ trong audit.
 
 ## 7. Ảnh portfolio nên chụp
 
@@ -83,7 +92,8 @@ Không tạo ảnh dashboard giả hay công khai log, PCAP hoặc report thật
 > Isolated VMware Workstation Pro cybersecurity lab with Suricata, centralized logging,
 > Grafana dashboards, bounded educational simulations, and a safety-focused Python CLI.
 
-Trước khi có bằng chứng live, giữ tuyên bố triển khai/validation pending trong README.
+README ghi kết quả đã có bằng chứng cùng giới hạn; không dùng fixture để bổ sung
+các kết quả thực hành chưa được đo.
 
 ## 9. GitHub topics đề xuất
 

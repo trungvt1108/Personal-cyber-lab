@@ -3,6 +3,8 @@
 ## Chuẩn bị
 
 - Ba VM cùng LAN Segment; NAT ngắt trước thực hành.
+- Shared Folders, clipboard và drag-and-drop tắt trên cả ba VM. Chuyển tài liệu
+  vào VM trước lượt demo; mở lại share sau khi kết thúc nếu cần lấy bằng chứng.
 - Kali truy cập Target và Monitor bằng IP trong config.
 - Mở terminal từng VM và Grafana trên Kali.
 - Đối chiếu giờ UTC bằng `date -u` trên ba VM trước khi chọn cửa sổ điều tra.

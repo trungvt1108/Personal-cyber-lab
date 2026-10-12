@@ -27,7 +27,10 @@ Sau khi cập nhật tài liệu và kiểm tra thành công, xuất source:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/export-source.py
-Get-FileHash .generated/personal-cyber-lab-source.zip -Algorithm SHA256
+$sourceHash = Get-FileHash .generated/personal-cyber-lab-source.zip -Algorithm SHA256
+$hashLine = $sourceHash.Hash.ToLowerInvariant() + '  personal-cyber-lab-source.zip'
+Set-Content .generated/source-final-sha256.txt -Value $hashLine -Encoding ASCII
+$hashLine
 ```
 
 Giữ hash để đối chiếu trên ba VM. Chỉ dùng ZIP do script này tạo. ZIP không có
@@ -42,10 +45,11 @@ chọn Read-only. Đây là một share khác với share bằng chứng nếu �
 Trên Kali:
 
 ```bash
-cp /mnt/hgfs/lab-source/personal-cyber-lab-source.zip /tmp/
-sha256sum /tmp/personal-cyber-lab-source.zip
-scp -i ~/.ssh/cyberlab_lab /tmp/personal-cyber-lab-source.zip labuser@192.168.56.20:/tmp/
-scp -i ~/.ssh/cyberlab_lab /tmp/personal-cyber-lab-source.zip labuser@192.168.56.30:/tmp/
+cp /mnt/hgfs/lab-source/{personal-cyber-lab-source.zip,source-final-sha256.txt} /tmp/
+cd /tmp
+sha256sum -c source-final-sha256.txt
+scp -i ~/.ssh/cyberlab_lab personal-cyber-lab-source.zip source-final-sha256.txt labuser@192.168.56.20:/tmp/
+scp -i ~/.ssh/cyberlab_lab personal-cyber-lab-source.zip source-final-sha256.txt labuser@192.168.56.30:/tmp/
 ```
 
 Nếu share chưa xuất hiện, kiểm tra lại tên share và trạng thái bật Shared Folders
@@ -58,8 +62,9 @@ Chạy lần lượt trên Kali, Target và Monitor. Mỗi VM dùng ZIP cùng ha
 Các lệnh dưới là Bash trong VM:
 
 ```bash
+cd /tmp
+sha256sum -c source-final-sha256.txt
 cd /opt/personal-cyber-lab
-sha256sum /tmp/personal-cyber-lab-source.zip
 source_stage=$(mktemp -d /tmp/cyberlab-source.XXXXXX)
 python3 -m zipfile -e /tmp/personal-cyber-lab-source.zip "$source_stage"
 diff -u config/lab.yml "$source_stage/config/lab.yml"
@@ -75,7 +80,7 @@ sudo install -d -m 700 local/source-backups
 sudo tar -czf "local/source-backups/source-$(date -u +%Y%m%dT%H%M%SZ).tar.gz" \
   --exclude='./local' --exclude='./.git' --exclude='./.venv' \
   --exclude='./.generated' --exclude='./reports/private' .
-sudo cp -R "$source_stage/." /opt/personal-cyber-lab/
+sudo cp -R "${source_stage:?Chua_co_source_stage}/." /opt/personal-cyber-lab/
 python3 cyberlab.py validate-config
 ```
 
@@ -84,6 +89,23 @@ trong ZIP; không xóa dữ liệu khác trong deployment. Không chép venv Win
 vào Linux. Giữ staging cho tới khi kiểm tra xong.
 
 ## 4. Kiểm tra deployment hiện có
+
+Hoàn tất chuyển file rồi tắt kênh chia sẻ trên cả ba VM trước khi tạo marker:
+
+1. VMware Settings, Options, Shared Folders: chọn Disabled. Kiểm tra cả lab-source
+   và lab-evidence; bỏ trạng thái Always enabled nếu đang dùng.
+2. VMware Settings, Options, Guest Isolation: bỏ Enable copy and paste và
+   Enable drag and drop. Tháo ISO/thiết bị chia sẻ nếu đã dùng để chuyển source.
+3. Giữ NIC LAN Segment kết nối; NIC NAT ngắt và không tự kết nối khi bật VM.
+4. Trong Kali, thử truy cập nội dung thư mục `/mnt/hgfs/lab-source` và
+   `/mnt/hgfs/lab-evidence`: không được đọc file qua share. Thư mục mount có thể
+   vẫn tồn tại; chỉ kiểm tra tên thư mục hoặc mountpoint chưa đủ.
+5. Trên mỗi VM, `ip -4 route show default` và `ip -6 route show default` phải
+   không in default route. Nếu cần bật lại share, kết thúc bài thực hành trước.
+
+Nếu VMware chưa áp dụng tùy chọn khi VM đang chạy, shutdown guest, chỉnh Settings
+rồi bật lại; sau đó tạo marker mới. Các lệnh sau chạy từ source đã nằm trong VM,
+không cần share Windows.
 
 Trên Target:
 
@@ -160,6 +182,34 @@ git status --short
 git log -1 --oneline
 ```
 
-Nếu có Gitleaks, chạy scan history sau commit như hướng dẫn trong
-[PUBLICATION_CHECKLIST.md](../PUBLICATION_CHECKLIST.md). Đây là commit local;
-GitHub remote, push và quyết định public repo là bước riêng của chủ project.
+Nếu có Gitleaks, chạy scan history sau commit:
+
+```powershell
+.\.generated\tools\gitleaks\gitleaks.exe git . --config .gitleaks.toml --redact --no-banner
+```
+
+Tên và email commit sẽ đi theo lịch sử Git. Chủ project đã chọn giữ danh tính
+hiện tại; không cần đổi email hoặc amend commit cho bước cập nhật tài liệu này.
+
+## 7. Push từ Windows và kiểm tra GitHub
+
+Tạo repository trống trong tài khoản GitHub bạn chọn. Không thêm README, license
+hoặc .gitignore qua giao diện vì project đã có các file này. Quyết định Private
+hay Public dựa trên [publication checklist](../PUBLICATION_CHECKLIST.md) và các
+giới hạn kiểm chứng đã ghi. Không chạy git push từ VM.
+
+Kiểm tra remote trước khi thêm; thay REPOSITORY_URL bằng URL repo vừa tạo:
+
+```powershell
+git remote
+git remote add origin "REPOSITORY_URL"
+git push -u origin main
+```
+
+Chỉ chạy remote add khi chưa có origin. Nếu đã có, đối chiếu URL tại máy trước
+khi push; không ghi đè remote đang dùng. Đăng nhập GitHub theo cơ chế xác thực
+hiện có; không lưu token trong URL remote hoặc trong source.
+
+Sau push, mở repo, kiểm tra file và tab Actions. Workflow Defensive static checks
+phải hoàn thành mới được ghi hosted CI PASS. Nếu job fail, đọc job lỗi, sửa và
+kiểm tra lại; trạng thái local PASS không tự xác nhận hosted CI.

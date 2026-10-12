@@ -27,7 +27,9 @@ ShellCheck's semantic analysis. Review the measured results in
 
 ## Explicit VM tests
 
-Create the lab and disconnect NAT first. Run the diagnostic wrapper from Kali:
+Create the lab, disconnect NAT and disable Shared Folders, clipboard and
+drag-and-drop on every VM first. Complete file transfer before testing. Run the
+diagnostic wrapper from Kali:
 
 ```bash
 bash scripts/validate-lab.sh --confirm-isolated
@@ -56,5 +58,5 @@ live fixtures even if someone adds live switches to CI accidentally.
 
 Before guest service startup, Ansible also runs `sshd -t`, `rsyslogd -N1` and
 `suricata -T` on the installed configuration. Run `sudo nginx -t` for both sites
-and inspect firewall rules/container publications. All such guest checks remain
-pending until the VMs actually run.
+and inspect firewall rules/container publications. Operator-observed guest results
+and checks that remain pending are recorded in [validation-results.md](validation-results.md).

@@ -5,7 +5,10 @@ Publication status: **NOT READY**
 Review date: 2026-10-13. This repository contains source/templates/synthetic data;
 the owner must complete manual staging, deployment and dependency reviews below.
 Unverified items are **REQUIRES MANUAL REVIEW**, not automatically treated as safe.
-No commit, push, remote repository creation or publication was performed.
+The first source snapshot was committed locally on main. No remote is configured
+in the repository reviewed on 2026-10-13; no push or publication was performed
+by the review tools. This status covers the final owner publication review,
+not a claim that all guest deployment work is still pending.
 
 ## Secret scan
 
@@ -32,9 +35,12 @@ owner notification and revocation before publication; none was found here.
 
 Candidate text was checked for personal emails, home-directory paths, MACs and
 suspicious literal credentials. Public config uses generic lab hostnames/accounts.
-No real identity, host settings, personal SSH material or host logs were imported.
-**REQUIRES MANUAL REVIEW:** owner review of exact staged files and future commit
-author metadata. Pattern scanning cannot recognize every possible identifying text.
+No personal identity was imported into public source/configuration, and no
+personal SSH material or host logs are included. Commit author/committer names
+and email were inspected separately: the owner explicitly chose to keep the
+current identity visible in Git history. This is an accepted publication choice;
+the actual values are not repeated in source documents. Secret scanning does not
+establish commit metadata privacy. Review each new staged snapshot before commit.
 
 ## Network information scan
 
@@ -56,11 +62,12 @@ findings. Markdown links, parseable source and privacy exclusions passed the
 repository consistency check. Exact measured results are in
 [validation-results.md](docs/validation-results.md).
 
-Git was initialized locally on `main`; there are **zero tracked files and no
-commits** in this snapshot. Therefore history scanning is currently not applicable.
-Candidate review is not staged-file review. **REQUIRES MANUAL REVIEW:** explicitly
-stage reviewed files, inspect their diff, configure nonidentifying commit metadata,
-then run Gitleaks history scanning after the first commit. No `git add .` was used.
+The first local snapshot on `main` contains **132 tracked files and one commit**.
+Gitleaks scanned that commit and reported no leaks in its content. The tracked
+file list matches the publication manifest; private paths are absent from the
+history reviewed. The owner accepts the chosen commit identity. Documentation
+updates still require a new staged diff review and a history scan after commit.
+Stage the reviewed manifest; do not infer staged-file approval from a source scan.
 
 ## Dependency audit
 
@@ -95,8 +102,9 @@ Ubuntu SSH socket activation is disabled in the guest role and its distribution
 migration overrides removed; the ordinary SSH service binds the validated lab
 address and waits for network-online. Operator screenshots now show the monitor
 syslog listener after reboot and a passing marker/ingestion validator after the
-capture-filter fix. Final source sync and full Ansible execution/idempotence
-remain separate checks.
+capture-filter fix. Later screenshots show matching ZIP checksums and configuration
+copies on all three guests, followed by a passing monitor validator. Full Ansible
+execution/idempotence remains unverified; file transfer is not deployment replay.
 
 Regression tests cover the safety gates, malformed input, no-network dry-runs,
 HTTP redirect refusal, parser scope and report escaping/path restrictions. No

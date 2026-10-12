@@ -16,10 +16,13 @@ events, investigate them and produce a private incident report.
 
 [VMware setup and migration guide in Vietnamese](docs/vmware.vi.md)
 
-**Implementation is provided; live guest deployment and detection are unverified.**
-No VM was created by this project session. Tests never substitute fixture data for
-real observations. See the measured checks and pending VM work in the validation
-results. Publication requires the owner's final privacy/dependency review.
+**The three-VM lab has been deployed; operator-provided evidence shows the
+monitor validator passing all 15 checks.** URL markers, SSH rejection and
+discover/HTTP exercises have supporting lab observations. Windows source checks
+passed with **129 tests passed and 6 live tests skipped**. Raw evidence stays
+private; fixtures remain synthetic. See [validation results](docs/validation-results.md)
+for the scope and remaining checks, including Ansible idempotence and hosted CI.
+Publication requires review of the exact source snapshot and documented limits.
 
 ## Architecture
 

@@ -124,8 +124,10 @@ running the corresponding check and preserving evidence privately.
 ## Source closure on 2026-10-13
 
 Windows checks were repeated after the runtime fixes, handler corrections and
-IPv4 capture filter were included in source. This source revision has not yet
-been synchronized to all guests. No host service was started for these checks.
+IPv4 capture filter were included in source. Subsequent operator screenshots show
+matching ZIP checksums on Kali, Target and Monitor and identical config copies,
+followed by a monitor validator run with 15 PASS. No host service was started
+for the Windows checks.
 
 | Check | Measured result / boundary |
 | --- | --- |
@@ -157,5 +159,8 @@ their logs, screenshots and hashes stay private.
 Full Ansible execution/idempotence for this final source, another complete reboot
 after the capture-filter change, image/guest advisory review and hosted GitHub CI
 have not been established by those screenshots. The six live pytest cases were
-not run by the Windows test suite. Follow [finalize.vi.md](finalize.vi.md) to sync
-source, validate the guests and save a local Git version.
+not run by the Windows test suite. The first source snapshot has a local commit
+on main; its 132 tracked files match the manifest and its one-commit content scan
+reported no leaks. The owner accepts the chosen author/committer identity. No
+remote or hosted CI run exists in the repository checked on 2026-10-13.
+Follow [finalize.vi.md](finalize.vi.md) for future updates and publication review.

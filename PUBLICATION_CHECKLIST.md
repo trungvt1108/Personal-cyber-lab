@@ -9,7 +9,7 @@ The final approval belongs to the owner. Do not push automatically.
 - [x] No API key
 - [x] No access/refresh/authentication token
 - [x] No private key or personal SSH public key
-- [x] No personal email
+- [x] No personal email in public source; owner accepts chosen email in Git metadata
 - [x] No personal username in source/config
 - [x] No real hostname; configured names are LAB-KALI/TARGET/MONITOR
 - [x] No real public IP; rejected documentation addresses appear only in tests
@@ -22,16 +22,20 @@ The final approval belongs to the owner. Do not push automatically.
 - [x] No database dump or real database
 - [x] No sensitive public report; example is explicitly synthetic
 - [x] `.gitignore` reviewed and dummy protected paths checked
-- [ ] Git tracked/staged files reviewed after explicit staging (currently none)
+- [x] First tracked snapshot reviewed: 132 public source files
+- [ ] Review the new staged diff after documentation updates
 - [x] Public source secret scan completed; see audit for measured scope
-- [x] Initial Git history reviewed: no commits, history scan not applicable yet
-- [ ] Recheck first commit metadata/history with a redacted history secret scan
+- [x] First commit history scanned with Gitleaks; no content leaks found
+- [x] First commit metadata inspected; owner accepts the current display name/email
+- [ ] Recheck history after the next commit
 - [x] Simulation code limited to configured lab network and bounded operations
 - [x] Python dependency package advisories reviewed for the recorded snapshot
 - [ ] Container digests/advisories and installed guest packages reviewed locally
 - [x] Source security review completed; residual risks documented
 - [ ] Actual VM topology, firewall and SSH settings manually reviewed
-- [ ] Guest service/configuration and end-to-end detection checks completed
+- [x] Operator evidence: Suricata/Nginx checks and monitor validator 15 PASS
+- [x] Operator evidence: URL/SSH/discover/HTTP activity and dashboard/Explore
+- [ ] Full Ansible idempotence, log rotation and complete reboot checks measured
 - [ ] Any later screenshots/log-derived narrative sanitized and manually approved
 - [ ] GitHub Actions reviewed by owner, including dependency/action pins
 - [ ] Owner approves publication of the exact staged snapshot
