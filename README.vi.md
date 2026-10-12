@@ -4,23 +4,48 @@
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB)
 ![Phạm vi lab cô lập](https://img.shields.io/badge/scope-isolated%20lab-teal)
 
-Project portfolio về phòng thủ an ninh mạng trên VMware Workstation Pro: dựng mạng cô lập,
-cấu hình máy mục tiêu, thu thập telemetry, phát hiện sự kiện mẫu, điều tra và
-viết báo cáo. [English](README.md) · [Hướng dẫn cài đặt](docs/installation.md) ·
+Personal Cyber Lab là môi trường thực hành phòng thủ an ninh mạng trên VMware
+Workstation Pro, mô phỏng quy trình giám sát của một SOC (trung tâm vận hành
+an ninh): thu thập log, phát hiện sự kiện, điều tra và lập báo cáo trong mạng cô lập.
+[English](README.md) · [Hướng dẫn cài đặt](docs/installation.md) ·
 [Kết quả kiểm tra](docs/validation-results.md)
 
-[Bàn giao và các bước tiếp theo](docs/handoff.vi.md) ·
+[Trạng thái triển khai và bàn giao](docs/handoff.vi.md) ·
 [Cây repository đầy đủ](docs/repository-tree.md)
 
-**Bạn dùng VMware:** xem [cài đặt, cập nhật VM hiện có và test từng bước](docs/vmware.vi.md).
+[Hướng dẫn VMware bằng tiếng Việt](docs/vmware.vi.md) bao gồm cài đặt, cập nhật
+VM hiện có và kiểm tra từng bước.
 
-**Ba VM đã được triển khai; bằng chứng người dùng cung cấp xác nhận validator
-Monitor đạt đủ 15 PASS.** Đã có quan sát URL marker, SSH rejection và bài
-discover/HTTP. Kiểm tra source trên Windows đạt **129 PASS, 6 test live SKIP**.
-Ảnh/log thật được giữ private; dữ liệu ví dụ vẫn có nhãn synthetic. Xem
-[kết quả và giới hạn kiểm chứng](docs/validation-results.md), gồm các mục còn chờ
-như Ansible idempotence và hosted CI. Project không tự tạo VM, thay đổi mạng
-Windows hoặc push GitHub.
+## Mục đích và ứng dụng
+
+Lab kết nối hoạt động trên máy mục tiêu với bằng chứng ở hai nguồn: log dịch vụ
+và dữ liệu mạng do Suricata quan sát. Từ đó, người thực hành có thể đối chiếu IP,
+thời điểm, URL và chữ ký cảnh báo để giải thích một sự kiện từ bằng chứng thu
+thập được.
+
+- **Học và thực hành SOC:** cấu hình log tập trung, đọc cảnh báo IDS, đối chiếu
+  SSH/HTTP log và viết báo cáo điều tra cho các kịch bản có giới hạn.
+- **Thử nghiệm trong lab:** thay đổi rule hoặc cấu hình pipeline, tạo lại sự kiện
+  mẫu và kiểm tra dữ liệu đi qua Suricata, rsyslog, Alloy, Loki và Grafana.
+- **Portfolio kỹ thuật:** trình bày kiến trúc, cấu hình bằng Ansible, quy trình
+  kiểm chứng và kết quả điều tra để minh họa kỹ năng Linux, mạng và giám sát SOC.
+
+Phạm vi triển khai là ba VM phục vụ học tập. Việc áp dụng cho hệ thống doanh
+nghiệp cần thiết kế thêm xác thực và mã hóa đường truyền, phân quyền, lưu trữ,
+sao lưu và vận hành theo quy mô thực tế. Các chữ ký giáo dục trong lab không
+đại diện cho khả năng phát hiện mọi cuộc tấn công.
+
+## Trạng thái kiểm chứng
+
+**Ba VM đã được triển khai; validator trên Monitor đạt đủ 15 PASS** theo bằng
+chứng thực hành được ghi nhận. URL marker, SSH rejection và bài discover/HTTP
+đã có log hoặc cảnh báo quan sát được. Kiểm tra source trên Windows ngày
+2026-10-13 đạt **129 PASS, 6 test live SKIP**.
+
+Ảnh và log thực hành được lưu riêng, ngoài Git; dữ liệu ví dụ công khai có nhãn
+synthetic. [Kết quả kiểm tra](docs/validation-results.md) ghi rõ phạm vi từng
+lần kiểm chứng và các mục chưa hoàn tất, như Ansible idempotence. Test offline
+và CI kiểm tra source không thay thế kiểm chứng pipeline trên VM.
 
 ## Kiến trúc và tài nguyên
 
@@ -105,7 +130,8 @@ EXAMPLE** và timestamp giả cố định. Nếu không có VM, test thật hi�
    trước khi chạy Ansible. Không commit cả public key lẫn private key cá nhân.
 4. Trong cửa sổ NAT phục vụ cài đặt, chạy Ansible từ Kali; khởi động demo trên
    target và stack giám sát trên monitor. Mật khẩu Grafana nhập kín, lưu local.
-5. Ngắt NAT trên cả ba VM, kiểm tra lại topology và chạy preflight từ Kali.
+5. Ngắt NAT, tắt Shared Folders, chia sẻ clipboard và kéo thả trên cả ba VM;
+   kiểm tra lại topology và chạy preflight từ Kali.
 6. Tạo một marker, kiểm tra từng bước log → EVE → Loki → dashboard rồi điều tra.
 
 Ví dụ **trong Kali sau khi đã cô lập lab**:
@@ -117,8 +143,8 @@ python3 cyberlab.py simulate urls --dry-run
 python3 cyberlab.py simulate urls --confirm-isolated
 ```
 
-Path `/admin-test` dự kiến khớp SID `1000004`; phải quan sát EVE và dashboard thật
-trước khi nói detection thành công. Xem
+Path `/admin-test` dự kiến khớp SID `1000004`; kết quả phát hiện cần được xác nhận
+bằng EVE và dashboard trong lab. Xem
 [detection-guide.md](docs/detection-guide.md),
 [logging.md](docs/logging.md) và [incident-response.md](docs/incident-response.md).
 Suricata không đọc được nội dung xác thực SSH đã mã hóa; kết luận đăng nhập dựa
@@ -137,20 +163,26 @@ Lỗi thường gặp được giải thích trong [troubleshooting.md](docs/tro
 [screenshots.md](docs/screenshots.md) chỉ hướng dẫn chụp và kiểm tra riêng tư, không
 tự thêm ảnh thật. [Threat model](docs/threat-model.md) giải thích ranh giới tin cậy.
 
-## Trước khi đưa lên GitHub
+## Demo và quản lý phiên bản
 
-Chốt bản đang chạy theo [hướng dẫn đồng bộ source và Git](docs/finalize.vi.md).
-Dùng [kịch bản demo](docs/demo.vi.md) để trình diễn theo thứ tự và ghi bằng chứng.
+[Hướng dẫn đồng bộ source và Git](docs/finalize.vi.md) mô tả cách đóng gói,
+đối chiếu source trên VM và lưu phiên bản. [Kịch bản demo](docs/demo.vi.md) trình
+bày thứ tự thực hành và bằng chứng cần thu thập.
+
+## Phạm vi sử dụng và dữ liệu công khai
 
 Đọc [SECURITY.md](SECURITY.md), [PUBLICATION_CHECKLIST.md](PUBLICATION_CHECKLIST.md)
 và [PUBLICATION_AUDIT.md](PUBLICATION_AUDIT.md). Không commit `.env`, key, token,
 log thật, PCAP, database dump, report nhạy cảm hoặc ảnh chưa kiểm tra. `.gitignore`
 không bảo vệ file đã được track; review cả lịch sử Git. Nếu phát hiện secret,
-rotate/revoke và làm sạch history trước khi public. Bạn tự thực hiện push sau
-khi review; project không tự publish.
+thu hồi hoặc thay credential và làm sạch lịch sử Git trước khi công khai.
 
-Project giúp luyện Linux, network segmentation, logging, IDS, điều tra incident,
-automation và tư duy bảo mật. Ba hướng v2: TLS xác thực cho log transport, telemetry
-Windows endpoint và replay traffic tổng hợp đã kiểm tra trong lab. Chỉ sử dụng
-trong lab riêng được ủy quyền; không nhắm public IP, khai thác hệ thống bên thứ ba
-hay tạo malware. Mã nguồn dùng [giấy phép MIT](LICENSE).
+Chỉ sử dụng trong lab riêng được ủy quyền. Các mô phỏng giới hạn ở IP đã cấu hình
+và không bao gồm khai thác hệ thống bên thứ ba hay tạo malware. Mã nguồn dùng
+[giấy phép MIT](LICENSE).
+
+## Hướng phát triển
+
+- Bổ sung TLS có xác thực cho đường truyền log.
+- Thu thập telemetry từ Windows endpoint trong lab.
+- Phát lại traffic tổng hợp đã kiểm tra để tái hiện kịch bản phát hiện.
